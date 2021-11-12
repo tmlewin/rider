@@ -5,10 +5,33 @@ import tw from "tailwind-styled-components"
 import mapboxgl from '!mapbox-gl'
 import Map from './components/Map'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import {auth} from '../firebase'
+import { useRouter } from 'next/router'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+
 
 
 
 export default function Home() {
+  const[user,setUser]=useState(null)
+  const router = useRouter()
+
+
+  useEffect(()=>{
+    return onAuthStateChanged(auth,user=>{
+      if(user){
+        setUser({
+          name:user.displayName,
+          photoUrl:user.photoURL,
+        })
+      }else{
+        setUser(null)
+        router.push('/login')
+      }
+    })
+
+  },[])
  
 
 
@@ -20,8 +43,8 @@ export default function Home() {
         <Header>
           <Uberlogo src= " https://i.ibb.co/84stgjq/uber-technologies-new-20218114.jpg" alt="uber logo"/>
           <Profile>
-            <Name>Thomas</Name>
-            <UserImage src="https://media-exp1.licdn.com/dms/image/D4E03AQGG7idKe3lkhQ/profile-displayphoto-shrink_800_800/0/1633012806193?e=1642032000&v=beta&t=XNQmgODlNFxlbp5XAy4cZlV8h5X11_sEB2PBm3B8_DY" alt="profile"/>
+            <Name>{user && user.name }</Name>
+            <UserImage src={user && user.photoUrl} onClick={()=>signOut(auth)} alt="profile"/>
           </Profile>
           </Header>
 
@@ -95,7 +118,7 @@ const Name = tw.div`
 
 
 const UserImage = tw.img`
-h-12 w-12 rounded-full border border-gray-200 p-px
+h-12 w-12 rounded-full border border-gray-200 p-px cursor-pointer
 
 `
 
